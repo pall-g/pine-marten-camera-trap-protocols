@@ -106,8 +106,9 @@ revisit analyses, manuscript figures, fitted model objects and
 - `outputs/site_metrics.csv`
 - `outputs/negative_binomial_rate_ratios.csv`
 - `outputs/event_rate_models.txt`
-- `outputs/time_to_first_detection_by_site.csv`
-- `outputs/time_to_first_detection_results.txt`
+- `outputs/time_to_first_detection_summary.csv`
+- `outputs/time_to_first_detection_survival_data.csv`
+- `outputs/time_to_first_detection_tests.txt`
 - `outputs/time_to_first_revisit_by_site.csv`
 - `outputs/revisit_survival_results.txt`
 - `outputs/figures/`
