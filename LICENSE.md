@@ -1,6 +1,7 @@
 # Licensing
 
-Copyright (c) 2026 The authors
+Copyright (c) 2026 The Pine Marten Protocol Comparison authors
+
 
 ## Data and generated outputs
 
