@@ -122,9 +122,7 @@ privately and must not be committed to the public repository or its Git history.
 
 ## Citation
 
-The dataset citation and Zenodo DOI will be added after the archive is published.
-Please cite the associated article and archived repository when reusing these
-materials.
+A persistent DOI and recommended citation will be provided through Zenodo upon repository archival.
 
 ## Licence
 
