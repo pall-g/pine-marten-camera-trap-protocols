@@ -1,0 +1,34 @@
+
+Call:
+glm.nb(formula = marten_events ~ protocol + offset(log(trap_nights)), 
+    data = site_metrics, init.theta = 0.7216894325, link = log)
+
+Coefficients:
+                          Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                -4.2675     0.2768 -15.417  < 2e-16 ***
+protocolTree-mounted bait   1.8349     0.3779   4.856  1.2e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for Negative Binomial(0.7217) family taken to be 1)
+
+    Null deviance: 76.157  on 49  degrees of freedom
+Residual deviance: 52.984  on 48  degrees of freedom
+AIC: 236.07
+
+Number of Fisher Scoring iterations: 1
+
+
+              Theta:  0.722 
+          Std. Err.:  0.202 
+
+ 2 x log-likelihood:  -230.073 
+# A tibble: 2 × 7
+  term                      estimate std.error statistic  p.value conf.low conf.high
+  <chr>                        <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+1 (Intercept)                 0.0140     0.277    -15.4  1.26e-53  0.00827    0.0246
+2 protocolTree-mounted bait   6.26       0.378      4.86 1.20e- 6  3.00      13.3   
+[1] "Poisson dispersion: 5.36315049585955"
+                        df      AIC
+poisson_model            2 367.6358
+negative_binomial_model  3 236.0734
