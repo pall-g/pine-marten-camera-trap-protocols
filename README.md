@@ -1,9 +1,6 @@
 # Pine marten camera-trap protocol comparison
 
-This repository contains the data and R code supporting a comparison of two
-camera-trap survey protocols for European pine martens (*Martes martes*) in
-northern Sweden: ground-based inaccessible lure stations and tree-mounted
-accessible bait stations.
+This repository contains the data and R code supporting a comparison of two camera-trap survey protocols for European pine martens (Martes martes) in northern Sweden: ground-based stations with inaccessible lure and tree-mounted stations with accessible bait, hereafter referred to as the ground-based lure and tree-mounted bait protocols, respectively.
 
 Precise camera-trap coordinates and identifying metadata are not included in
 the public data. Anonymised station identifiers are retained because they are
