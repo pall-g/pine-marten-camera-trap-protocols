@@ -74,14 +74,11 @@ The script:
 5. compares naive occupancy using Fisher's exact test;
 6. models event counts using a negative-binomial generalised linear model with
    the natural logarithm of trap nights as an offset;
-7. compares time to first detection among detected stations using a Wilcoxon
-   rank-sum test; and
+7. analyses time to first detection using a time-to-event approach, with non-detected stations treated as right-censored observations, and compares protocols using a log-rank test; and
 8. analyses time to first revisit using Kaplan-Meier curves, a log-rank test,
    a Cox model and restricted mean survival time.
 
-The non-parametric Wilcoxon comparison of station-level detection rates is not
-included because the negative-binomial model is the primary analysis of event
-rates and accounts for sampling effort directly.
+Detection rates are analysed using a negative-binomial generalised linear model that accounts for trap effort, whereas time to first detection is analysed using a censored time-to-event approach that retains stations without detections.
 
 ## Reproducibility checkpoints
 
