@@ -355,12 +355,6 @@ first_detection <- independent_events %>%
     )
   )
 
-# Reproduces the manuscript's detected-stations-only comparison.
-first_detection_wilcoxon <- wilcox.test(
-  days_to_first_detection ~ protocol,
-  data = first_detection,
-  exact = FALSE
-)
 
 first_detection_summary <- first_detection %>%
   group_by(protocol) %>%
@@ -375,7 +369,7 @@ first_detection_summary <- first_detection %>%
     .groups = "drop"
   )
 
-# Sensitivity analysis retaining non-detected sites as right-censored.
+# Primary time-to-first-detection analysis retaining non-detected stations as right-censored observations.
 first_detection_survival_data <- effort_by_site %>%
   left_join(
     first_detection %>% dplyr::select(protocol, site, first_detection),
@@ -399,7 +393,6 @@ write_csv(first_detection_summary, file.path(out_dir, "time_to_first_detection_s
 write_csv(first_detection_survival_data, file.path(out_dir, "time_to_first_detection_survival_data.csv"))
 
 capture.output(
-  first_detection_wilcoxon,
   first_detection_logrank,
   file = file.path(out_dir, "time_to_first_detection_tests.txt")
 )
@@ -580,13 +573,6 @@ p_first_detection <- ggplot(
 ) +
   geom_boxplot(width = 0.5, alpha = 0.18, outlier.shape = NA, linewidth = 0.35) +
   geom_jitter(width = 0.10, size = 1.5, alpha = 0.85, shape = 18) +
-  annotate(
-    "text",
-    x = 1.5,
-    y = max(first_detection$days_to_first_detection) * 0.95,
-    label = format_p(first_detection_wilcoxon$p.value),
-    colour = "grey30"
-  ) +
   scale_colour_manual(values = protocol_colours) +
   scale_fill_manual(values = protocol_colours) +
   labs(x = NULL, y = "Days to first pine marten detection") +
@@ -670,9 +656,7 @@ cat("\nFisher test for naive occupancy:\n")
 print(fisher_occupancy)
 cat("\nNegative-binomial rate ratios:\n")
 print(rate_ratio_results)
-cat("\nDetected-site time-to-first-detection test:\n")
-print(first_detection_wilcoxon)
-cat("\nCensored time-to-first-detection log-rank test:\n")
+cat("\nTime-to-first-detection log-rank test:\n")
 print(first_detection_logrank)
 cat("\nRevisit log-rank test:\n")
 print(revisit_logrank)
