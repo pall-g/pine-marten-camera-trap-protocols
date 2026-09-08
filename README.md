@@ -74,7 +74,7 @@ The script:
 5. compares naive occupancy using Fisher's exact test;
 6. models event counts using a negative-binomial generalised linear model with
    the natural logarithm of trap nights as an offset;
-7. analyses time to first detection using a time-to-event approach, with non-detected stations treated as right-censored observations, and compares protocols using a log-rank test; and
+7. analyses time to first detection using a time-to-event approach, with non-detected stations treated as right-censored observations, and compares protocols using a log-rank test;
 8. analyses time to first revisit using Kaplan-Meier curves, a log-rank test,
    a Cox model and restricted mean survival time.
 9. repeats the event-rate and revisit analyses using a 60-minute independent-event threshold as a sensitivity analysis.   
@@ -107,6 +107,12 @@ revisit analyses, manuscript figures, fitted model objects and
 - `outputs/time_to_first_revisit_by_site.csv`
 - `outputs/revisit_survival_results.txt`
 - `outputs/figures/`
+- `independent_events_60min.csv`
+- `site_metrics_60min.csv`
+- `sensitivity_60min_summary.csv`
+- `sensitivity_60min_rate_ratio.csv`
+- `sensitivity_60min_revisit_data.csv`
+- `sensitivity_60min_results.txt`
 
 ## Data fields and privacy
 
