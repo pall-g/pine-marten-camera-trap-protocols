@@ -488,184 +488,7 @@ revisit_dynamics <- independent_events %>%
 
 write_csv(revisit_dynamics, file.path(out_dir, "revisit_dynamics.csv"))
 
-# ---- 10. Manuscript summary table -----------------------------------------
-
-manuscript_table <- site_metrics %>%
-  group_by(protocol) %>%
-  summarise(
-    total_stations = n(),
-    stations_with_pine_marten = sum(detected),
-    naive_occupancy = mean(detected),
-    total_trap_nights = round(sum(trap_nights)),
-    independent_events = sum(marten_events),
-    events_per_100_trap_nights = 100 * independent_events / total_trap_nights,
-    .groups = "drop"
-  )
-
-write_csv(manuscript_table, file.path(out_dir, "Table1_survey_summary.csv"))
-
-# ---- 11. Figures -----------------------------------------------------------
-
-set.seed(20260426)
-
-rate_model_p <- unname(
-  summary(negative_binomial_model)$coefficients[2, "Pr(>|z|)"]
-)
-
-p_detection_rate <- ggplot(
-  site_metrics,
-  aes(x = protocol, y = events_per_100_trap_nights, colour = protocol, fill = protocol)
-) +
-  geom_boxplot(width = 0.5, alpha = 0.18, outlier.shape = NA, linewidth = 0.35) +
-  geom_jitter(width = 0.10, size = 1.5, alpha = 0.85, shape = 18) +
-  annotate(
-    "text",
-    x = 1.5,
-    y = max(site_metrics$events_per_100_trap_nights) * 0.95,
-    label = format_p(rate_model_p),
-    colour = "grey30"
-  ) +
-  scale_colour_manual(values = protocol_colours) +
-  scale_fill_manual(values = protocol_colours) +
-  labs(x = NULL, y = "Pine marten events per 100 trap nights") +
-  theme_bw(base_size = 14) +
-  theme(legend.position = "none", panel.grid = element_blank())
-
-p_revisit_daily <- ggplot(
-  revisit_dynamics,
-  aes(x = day_bin, y = mean_events_per_detected_site, colour = protocol)
-) +
-  geom_line(linewidth = 0.7) +
-  scale_colour_manual(values = protocol_colours) +
-  labs(
-    x = "Days since first detection",
-    y = "Mean events per detected site",
-    colour = NULL,
-    title = "A"
-  ) +
-  theme_bw(base_size = 14) +
-  theme(
-    legend.position = "none",
-    panel.grid = element_blank(),
-    plot.title = element_text(face = "bold")
-  )
-
-p_revisit_cumulative <- ggplot(
-  revisit_dynamics,
-  aes(x = day_bin, y = cumulative_events_per_detected_site, colour = protocol)
-) +
-  geom_line(linewidth = 0.8) +
-  scale_colour_manual(values = protocol_colours) +
-  labs(
-    x = "Days since first detection",
-    y = "Cumulative events per detected site",
-    colour = NULL,
-    title = "B"
-  ) +
-  theme_bw(base_size = 14) +
-  theme(panel.grid = element_blank(), plot.title = element_text(face = "bold"))
-
-p_revisit_dynamics <- p_revisit_daily + p_revisit_cumulative
-
-p_first_detection <- ggplot(
-  first_detection,
-  aes(x = protocol, y = days_to_first_detection, colour = protocol, fill = protocol)
-) +
-  geom_boxplot(width = 0.5, alpha = 0.18, outlier.shape = NA, linewidth = 0.35) +
-  geom_jitter(width = 0.10, size = 1.5, alpha = 0.85, shape = 18) +
-  scale_colour_manual(values = protocol_colours) +
-  scale_fill_manual(values = protocol_colours) +
-  labs(x = NULL, y = "Days to first pine marten detection") +
-  theme_bw(base_size = 14) +
-  theme(legend.position = "none", panel.grid = element_blank())
-
-p_revisit_survival <- ggsurvplot(
-  revisit_km,
-  data = revisit_data,
-  risk.table = TRUE,
-  conf.int = FALSE,
-  censor = TRUE,
-  palette = unname(protocol_colours),
-  legend.title = "",
-  legend.labs = protocol_levels,
-  xlab = "Days since first detection",
-  ylab = "Probability of no revisit",
-  break.time.by = 10,
-  ggtheme = theme_bw(base_size = 14) + theme(panel.grid = element_blank())
-)
-p_revisit_survival$plot <- p_revisit_survival$plot +
-  theme(legend.title = element_blank())
-ggsave(
-  file.path(fig_dir, "Figure_detection_rate.png"),
-  p_detection_rate,
-  width = 6.2, height = 4.8, dpi = 600, bg = "white"
-)
-ggsave(
-  file.path(fig_dir, "Figure_detection_rate.pdf"),
-  p_detection_rate,
-  width = 6.2, height = 4.8, bg = "white"
-)
-ggsave(
-  file.path(fig_dir, "Figure_revisit_dynamics.png"),
-  p_revisit_dynamics,
-  width = 7.1, height = 4.2, dpi = 600, bg = "white"
-)
-ggsave(
-  file.path(fig_dir, "Figure_revisit_dynamics.pdf"),
-  p_revisit_dynamics,
-  width = 7.1, height = 4.2, bg = "white"
-)
-ggsave(
-  file.path(fig_dir, "FigureS1_time_to_first_detection.png"),
-  p_first_detection,
-  width = 6.2, height = 4.8, dpi = 600, bg = "white"
-)
-ggsave(
-  file.path(fig_dir, "Figure_time_to_first_revisit.png"),
-  p_revisit_survival$plot,
-  width = 6.8, height = 5.2, dpi = 600, bg = "white"
-)
-ggsave(
-  file.path(fig_dir, "Figure_time_to_first_revisit.pdf"),
-  p_revisit_survival$plot,
-  width = 6.8, height = 5.2, bg = "white"
-)
-
-# ---- 12. Reproducibility record and final summary -------------------------
-
-saveRDS(
-  list(
-    negative_binomial_model = negative_binomial_model,
-    poisson_model = poisson_model,
-    first_detection_logrank = first_detection_logrank,
-    revisit_km = revisit_km,
-    revisit_cox = revisit_cox,
-    rmst_30 = rmst_30,
-    rmst_50 = rmst_50
-  ),
-  file.path(out_dir, "fitted_models.rds")
-)
-
-writeLines(capture.output(sessionInfo()), file.path(out_dir, "sessionInfo.txt"))
-
-cat("\n============================================================\n")
-cat("ANALYSIS COMPLETED SUCCESSFULLY\n")
-cat("============================================================\n\n")
-print(checkpoint)
-cat("\nFisher test for naive occupancy:\n")
-print(fisher_occupancy)
-cat("\nNegative-binomial rate ratios:\n")
-print(rate_ratio_results)
-cat("\nTime-to-first-detection log-rank test:\n")
-print(first_detection_logrank)
-cat("\nRevisit log-rank test:\n")
-print(revisit_logrank)
-cat("\nCox proportional-hazards test:\n")
-print(revisit_ph_test)
-cat("\nOutputs saved in: ", normalizePath(out_dir), "\n", sep = "")
-
-
-# ----  Sensitivity analysis: 60-minute event threshold ------------------
+# ---- 9b. Sensitivity analysis: 60-minute event threshold -------------------
 
 # Repeat the main event-rate and revisit analyses using a 60-minute
 # separation threshold. The primary analysis retains the 30-minute threshold.
@@ -844,7 +667,7 @@ print(checkpoint_60)
 cat("\n60-minute negative-binomial rate ratio:\n")
 print(
   rate_ratio_results_60 %>%
-    filter(term != "(Intercept)")
+    dplyr::filter(term != "(Intercept)")
 )
 
 cat("\n60-minute revisit log-rank test:\n")
@@ -859,7 +682,7 @@ print(rmst_50_60)
 
 
 
-# Compare the primary 30-minute and sensitivity 60-minute revisit datasets
+# Verify whether the sensitivity threshold changed revisit outcomes
 
 revisit_comparison <- revisit_data %>%
   dplyr::select(
@@ -930,5 +753,186 @@ rate_ratio_results_60 %>%
   dplyr::select(estimate, conf.low, conf.high, p.value) %>%
   as.data.frame() %>%
   print(digits = 10)
+
+
+# ---- 10. Manuscript summary table -----------------------------------------
+
+manuscript_table <- site_metrics %>%
+  group_by(protocol) %>%
+  summarise(
+    total_stations = n(),
+    stations_with_pine_marten = sum(detected),
+    naive_occupancy = mean(detected),
+    total_trap_nights = round(sum(trap_nights)),
+    independent_events = sum(marten_events),
+    events_per_100_trap_nights = 100 * independent_events / total_trap_nights,
+    .groups = "drop"
+  )
+
+write_csv(manuscript_table, file.path(out_dir, "Table1_survey_summary.csv"))
+
+# ---- 11. Figures -----------------------------------------------------------
+
+set.seed(20260426)
+
+rate_model_p <- unname(
+  summary(negative_binomial_model)$coefficients[2, "Pr(>|z|)"]
+)
+
+p_detection_rate <- ggplot(
+  site_metrics,
+  aes(x = protocol, y = events_per_100_trap_nights, colour = protocol, fill = protocol)
+) +
+  geom_boxplot(width = 0.5, alpha = 0.18, outlier.shape = NA, linewidth = 0.35) +
+  geom_jitter(width = 0.10, size = 1.5, alpha = 0.85, shape = 18) +
+  annotate(
+    "text",
+    x = 1.5,
+    y = max(site_metrics$events_per_100_trap_nights) * 0.95,
+    label = format_p(rate_model_p),
+    colour = "grey30"
+  ) +
+  scale_colour_manual(values = protocol_colours) +
+  scale_fill_manual(values = protocol_colours) +
+  labs(x = NULL, y = "Pine marten events per 100 trap nights") +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "none", panel.grid = element_blank())
+
+p_revisit_daily <- ggplot(
+  revisit_dynamics,
+  aes(x = day_bin, y = mean_events_per_detected_site, colour = protocol)
+) +
+  geom_line(linewidth = 0.7) +
+  scale_colour_manual(values = protocol_colours) +
+  labs(
+    x = "Days since first detection",
+    y = "Mean events per detected site",
+    colour = NULL,
+    title = "A"
+  ) +
+  theme_bw(base_size = 14) +
+  theme(
+    legend.position = "none",
+    panel.grid = element_blank(),
+    plot.title = element_text(face = "bold")
+  )
+
+p_revisit_cumulative <- ggplot(
+  revisit_dynamics,
+  aes(x = day_bin, y = cumulative_events_per_detected_site, colour = protocol)
+) +
+  geom_line(linewidth = 0.8) +
+  scale_colour_manual(values = protocol_colours) +
+  labs(
+    x = "Days since first detection",
+    y = "Cumulative events per detected site",
+    colour = NULL,
+    title = "B"
+  ) +
+  theme_bw(base_size = 14) +
+  theme(panel.grid = element_blank(), plot.title = element_text(face = "bold"))
+
+p_revisit_dynamics <- p_revisit_daily + p_revisit_cumulative
+
+p_first_detection <- ggplot(
+  first_detection,
+  aes(x = protocol, y = days_to_first_detection, colour = protocol, fill = protocol)
+) +
+  geom_boxplot(width = 0.5, alpha = 0.18, outlier.shape = NA, linewidth = 0.35) +
+  geom_jitter(width = 0.10, size = 1.5, alpha = 0.85, shape = 18) +
+  scale_colour_manual(values = protocol_colours) +
+  scale_fill_manual(values = protocol_colours) +
+  labs(x = NULL, y = "Days to first pine marten detection") +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "none", panel.grid = element_blank())
+
+p_revisit_survival <- ggsurvplot(
+  revisit_km,
+  data = revisit_data,
+  risk.table = TRUE,
+  conf.int = FALSE,
+  censor = TRUE,
+  palette = unname(protocol_colours),
+  legend.title = "",
+  legend.labs = protocol_levels,
+  xlab = "Days since first detection",
+  ylab = "Probability of no revisit",
+  break.time.by = 10,
+  ggtheme = theme_bw(base_size = 14) + theme(panel.grid = element_blank())
+)
+p_revisit_survival$plot <- p_revisit_survival$plot +
+  theme(legend.title = element_blank())
+ggsave(
+  file.path(fig_dir, "Figure_detection_rate.png"),
+  p_detection_rate,
+  width = 6.2, height = 4.8, dpi = 600, bg = "white"
+)
+ggsave(
+  file.path(fig_dir, "Figure_detection_rate.pdf"),
+  p_detection_rate,
+  width = 6.2, height = 4.8, bg = "white"
+)
+ggsave(
+  file.path(fig_dir, "Figure_revisit_dynamics.png"),
+  p_revisit_dynamics,
+  width = 7.1, height = 4.2, dpi = 600, bg = "white"
+)
+ggsave(
+  file.path(fig_dir, "Figure_revisit_dynamics.pdf"),
+  p_revisit_dynamics,
+  width = 7.1, height = 4.2, bg = "white"
+)
+ggsave(
+  file.path(fig_dir, "FigureS1_time_to_first_detection.png"),
+  p_first_detection,
+  width = 6.2, height = 4.8, dpi = 600, bg = "white"
+)
+ggsave(
+  file.path(fig_dir, "Figure_time_to_first_revisit.png"),
+  p_revisit_survival$plot,
+  width = 6.8, height = 5.2, dpi = 600, bg = "white"
+)
+ggsave(
+  file.path(fig_dir, "Figure_time_to_first_revisit.pdf"),
+  p_revisit_survival$plot,
+  width = 6.8, height = 5.2, bg = "white"
+)
+
+# ---- 12. Reproducibility record and final summary -------------------------
+
+saveRDS(
+  list(
+    negative_binomial_model = negative_binomial_model,
+    poisson_model = poisson_model,
+    first_detection_logrank = first_detection_logrank,
+    revisit_km = revisit_km,
+    revisit_cox = revisit_cox,
+    rmst_30 = rmst_30,
+    rmst_50 = rmst_50
+    negative_binomial_model_60 = negative_binomial_model_60,
+    revisit_logrank_60 = revisit_logrank_60,
+    rmst_30_60 = rmst_30_60,
+    rmst_50_60 = rmst_50_60
+  ),
+  file.path(out_dir, "fitted_models.rds")
+)
+
+writeLines(capture.output(sessionInfo()), file.path(out_dir, "sessionInfo.txt"))
+
+cat("\n============================================================\n")
+cat("ANALYSIS COMPLETED SUCCESSFULLY\n")
+cat("============================================================\n\n")
+print(checkpoint)
+cat("\nFisher test for naive occupancy:\n")
+print(fisher_occupancy)
+cat("\nNegative-binomial rate ratios:\n")
+print(rate_ratio_results)
+cat("\nTime-to-first-detection log-rank test:\n")
+print(first_detection_logrank)
+cat("\nRevisit log-rank test:\n")
+print(revisit_logrank)
+cat("\nCox proportional-hazards test:\n")
+print(revisit_ph_test)
+cat("\nOutputs saved in: ", normalizePath(out_dir), "\n", sep = "")
 
 
