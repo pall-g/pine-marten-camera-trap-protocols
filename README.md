@@ -77,6 +77,7 @@ The script:
 7. analyses time to first detection using a time-to-event approach, with non-detected stations treated as right-censored observations, and compares protocols using a log-rank test; and
 8. analyses time to first revisit using Kaplan-Meier curves, a log-rank test,
    a Cox model and restricted mean survival time.
+9. repeats the event-rate and revisit analyses using a 60-minute independent-event threshold as a sensitivity analysis.   
 
 Detection rates are analysed using a negative-binomial generalised linear model that accounts for trap effort, whereas time to first detection is analysed using a censored time-to-event approach that retains stations without detections.
 
