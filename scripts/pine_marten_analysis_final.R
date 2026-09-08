@@ -664,3 +664,271 @@ cat("\nCox proportional-hazards test:\n")
 print(revisit_ph_test)
 cat("\nOutputs saved in: ", normalizePath(out_dir), "\n", sep = "")
 
+
+# ----  Sensitivity analysis: 60-minute event threshold ------------------
+
+# Repeat the main event-rate and revisit analyses using a 60-minute
+# separation threshold. The primary analysis retains the 30-minute threshold.
+
+independent_events_60 <- bind_rows(ground_media, tree_media) %>%
+  make_independent_events(threshold_minutes = 60) %>%
+  mutate(protocol = factor(protocol, levels = protocol_levels))
+
+# Station-level event counts and rates
+site_metrics_60 <- effort_by_site %>%
+  left_join(
+    independent_events_60 %>%
+      count(protocol, site, name = "marten_events"),
+    by = c("protocol", "site")
+  ) %>%
+  mutate(
+    marten_events = replace_na(marten_events, 0L),
+    detected = marten_events > 0,
+    events_per_100_trap_nights =
+      100 * marten_events / trap_nights
+  )
+
+# Summary counts
+checkpoint_60 <- site_metrics_60 %>%
+  group_by(protocol) %>%
+  summarise(
+    total_stations = n(),
+    detected_stations = sum(marten_events >= 1),
+    stations_with_subsequent_event = sum(marten_events >= 2),
+    independent_events = sum(marten_events),
+    trap_nights = sum(trap_nights),
+    events_per_100_trap_nights =
+      100 * independent_events / trap_nights,
+    .groups = "drop"
+  )
+
+# Negative-binomial event-rate model
+negative_binomial_model_60 <- glm.nb(
+  marten_events ~ protocol + offset(log(trap_nights)),
+  data = site_metrics_60
+)
+
+rate_ratio_results_60 <- broom::tidy(
+  negative_binomial_model_60,
+  exponentiate = TRUE,
+  conf.int = TRUE
+)
+
+# Time from first event to first subsequent independent event
+revisit_data_60 <- independent_events_60 %>%
+  arrange(protocol, site, event_start) %>%
+  group_by(protocol, site) %>%
+  summarise(
+    first_event = first(event_start),
+    second_event = if (n() >= 2) {
+      nth(event_start, 2)
+    } else {
+      as.POSIXct(NA, tz = "UTC")
+    },
+    n_events = n(),
+    .groups = "drop"
+  ) %>%
+  left_join(
+    effort_by_site %>%
+      dplyr::select(protocol, site, site_end),
+    by = c("protocol", "site")
+  ) %>%
+  mutate(
+    revisit_status = as.integer(!is.na(second_event)),
+    time_to_revisit_days = if_else(
+      revisit_status == 1L,
+      as.numeric(
+        difftime(second_event, first_event, units = "days")
+      ),
+      as.numeric(
+        difftime(site_end, first_event, units = "days")
+      )
+    )
+  )
+
+revisit_survival_60 <- Surv(
+  time = revisit_data_60$time_to_revisit_days,
+  event = revisit_data_60$revisit_status
+)
+
+revisit_logrank_60 <- survdiff(
+  revisit_survival_60 ~ protocol,
+  data = revisit_data_60
+)
+
+revisit_logrank_p_60 <- pchisq(
+  revisit_logrank_60$chisq,
+  df = length(revisit_logrank_60$n) - 1,
+  lower.tail = FALSE
+)
+
+# Restricted mean survival time
+rmst_input_60 <- revisit_data_60 %>%
+  mutate(
+    arm = as.integer(protocol == "Tree-mounted bait")
+  )
+
+rmst_30_60 <- rmst2(
+  time = rmst_input_60$time_to_revisit_days,
+  status = rmst_input_60$revisit_status,
+  arm = rmst_input_60$arm,
+  tau = 30
+)
+
+rmst_50_60 <- rmst2(
+  time = rmst_input_60$time_to_revisit_days,
+  status = rmst_input_60$revisit_status,
+  arm = rmst_input_60$arm,
+  tau = 50
+)
+
+# Save reproducible sensitivity-analysis outputs
+write_csv(
+  independent_events_60,
+  file.path(out_dir, "independent_events_60min.csv")
+)
+
+write_csv(
+  site_metrics_60,
+  file.path(out_dir, "site_metrics_60min.csv")
+)
+
+write_csv(
+  checkpoint_60,
+  file.path(out_dir, "sensitivity_60min_summary.csv")
+)
+
+write_csv(
+  rate_ratio_results_60,
+  file.path(out_dir, "sensitivity_60min_rate_ratio.csv")
+)
+
+write_csv(
+  revisit_data_60,
+  file.path(out_dir, "sensitivity_60min_revisit_data.csv")
+)
+
+capture.output(
+  "60-MINUTE EVENT-THRESHOLD SENSITIVITY ANALYSIS",
+  "",
+  "Summary counts and event rates:",
+  checkpoint_60,
+  "",
+  "Negative-binomial rate-ratio results:",
+  rate_ratio_results_60,
+  "",
+  "Stations with and without a subsequent event:",
+  table(
+    revisit_data_60$protocol,
+    revisit_data_60$revisit_status
+  ),
+  "",
+  "Log-rank test:",
+  revisit_logrank_60,
+  paste("Exact log-rank p-value:", revisit_logrank_p_60),
+  "",
+  "RMST at 30 days:",
+  rmst_30_60,
+  "",
+  "RMST at 50 days:",
+  rmst_50_60,
+  file = file.path(
+    out_dir,
+    "sensitivity_60min_results.txt"
+  )
+)
+
+cat("\n60-MINUTE SENSITIVITY ANALYSIS\n")
+print(checkpoint_60)
+
+cat("\n60-minute negative-binomial rate ratio:\n")
+print(
+  rate_ratio_results_60 %>%
+    filter(term != "(Intercept)")
+)
+
+cat("\n60-minute revisit log-rank test:\n")
+print(revisit_logrank_60)
+cat("Exact p-value:", revisit_logrank_p_60, "\n")
+
+cat("\n60-minute RMST at 30 days:\n")
+print(rmst_30_60)
+
+cat("\n60-minute RMST at 50 days:\n")
+print(rmst_50_60)
+
+
+
+# Compare the primary 30-minute and sensitivity 60-minute revisit datasets
+
+revisit_comparison <- revisit_data %>%
+  dplyr::select(
+    protocol,
+    site,
+    second_event_30 = second_event,
+    status_30 = revisit_status,
+    time_30 = time_to_revisit_days,
+    n_events_30 = n_events
+  ) %>%
+  full_join(
+    revisit_data_60 %>%
+      dplyr::select(
+        protocol,
+        site,
+        second_event_60 = second_event,
+        status_60 = revisit_status,
+        time_60 = time_to_revisit_days,
+        n_events_60 = n_events
+      ),
+    by = c("protocol", "site")
+  ) %>%
+  mutate(
+    same_second_event =
+      coalesce(second_event_30 == second_event_60, TRUE),
+    same_status = status_30 == status_60,
+    same_followup_time =
+      near(time_30, time_60),
+    event_count_changed =
+      n_events_30 != n_events_60
+  )
+
+# Stations where first-to-second results changed
+revisit_comparison %>%
+  dplyr::filter(
+    !same_second_event |
+      !same_status |
+      !same_followup_time
+  ) %>%
+  print(n = Inf)
+
+# Stations where total event counts changed
+revisit_comparison %>%
+  dplyr::filter(event_count_changed) %>%
+  dplyr::select(
+    protocol,
+    site,
+    n_events_30,
+    n_events_60,
+    second_event_30,
+    second_event_60,
+    time_30,
+    time_60
+  ) %>%
+  print(n = Inf)
+
+revisit_comparison %>%
+  summarise(
+    changed_second_events = sum(!same_second_event),
+    changed_statuses = sum(!same_status),
+    changed_followup_times = sum(!same_followup_time),
+    sites_with_fewer_events = sum(n_events_60 < n_events_30),
+    events_removed = sum(n_events_30 - n_events_60)
+  )
+
+rate_ratio_results_60 %>%
+  dplyr::filter(term == "protocolTree-mounted bait") %>%
+  dplyr::select(estimate, conf.low, conf.high, p.value) %>%
+  as.data.frame() %>%
+  print(digits = 10)
+
+
