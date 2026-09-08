@@ -908,7 +908,7 @@ saveRDS(
     revisit_km = revisit_km,
     revisit_cox = revisit_cox,
     rmst_30 = rmst_30,
-    rmst_50 = rmst_50
+    rmst_50 = rmst_50,
     negative_binomial_model_60 = negative_binomial_model_60,
     revisit_logrank_60 = revisit_logrank_60,
     rmst_30_60 = rmst_30_60,
