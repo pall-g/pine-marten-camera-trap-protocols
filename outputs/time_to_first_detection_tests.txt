@@ -1,0 +1,9 @@
+Call:
+survdiff(formula = Surv(detection_followup, detection_status) ~ 
+    protocol, data = first_detection_survival_data)
+
+                            N Observed Expected (O-E)^2/E (O-E)^2/V
+protocol=Ground-based lure 27       17     19.2     0.259     0.643
+protocol=Tree-mounted bait 23       17     14.8     0.337     0.643
+
+ Chisq= 0.6  on 1 degrees of freedom, p= 0.4 

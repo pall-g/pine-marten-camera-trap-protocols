@@ -1,0 +1,3 @@
+protocol,total_stations,detected_stations,stations_with_subsequent_event,independent_events,trap_nights,events_per_100_trap_nights
+Ground-based lure,27,17,7,40,2828.1764814814815,1.4143388951119074
+Tree-mounted bait,23,17,15,180,2023.3522800925925,8.896127568638855

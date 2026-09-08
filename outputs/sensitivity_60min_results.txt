@@ -1,0 +1,77 @@
+[1] "60-MINUTE EVENT-THRESHOLD SENSITIVITY ANALYSIS"
+[1] ""
+[1] "Summary counts and event rates:"
+# A tibble: 2 × 7
+  protocol          total_stations detected_stations stations_with_subsequent_ev…¹ independent_events trap_nights events_per_100_trap_…²
+  <fct>                      <int>             <int>                         <int>              <int>       <dbl>                  <dbl>
+1 Ground-based lure             27                17                             7                 40       2828.                   1.41
+2 Tree-mounted bait             23                17                            15                180       2023.                   8.90
+# ℹ abbreviated names: ¹​stations_with_subsequent_event, ²​events_per_100_trap_nights
+[1] ""
+[1] "Negative-binomial rate-ratio results:"
+# A tibble: 2 × 7
+  term                      estimate std.error statistic  p.value conf.low conf.high
+  <chr>                        <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+1 (Intercept)                 0.0140     0.275    -15.5  1.88e-54  0.00830    0.0245
+2 protocolTree-mounted bait   5.72       0.375      4.65 3.31e- 6  2.76      12.0   
+[1] ""
+[1] "Stations with and without a subsequent event:"
+                   
+                     0  1
+  Ground-based lure 10  7
+  Tree-mounted bait  2 15
+[1] ""
+[1] "Log-rank test:"
+Call:
+survdiff(formula = revisit_survival_60 ~ protocol, data = revisit_data_60)
+
+                            N Observed Expected (O-E)^2/E (O-E)^2/V
+protocol=Ground-based lure 17        7     15.3       4.5      15.9
+protocol=Tree-mounted bait 17       15      6.7      10.3      15.9
+
+ Chisq= 15.9  on 1 degrees of freedom, p= 7e-05 
+[1] "Exact log-rank p-value: 6.80530411623693e-05"
+[1] ""
+[1] "RMST at 30 days:"
+
+The truncation time: tau = 30  was specified. 
+
+Restricted Mean Survival Time (RMST) by arm 
+               Est.    se lower .95 upper .95
+RMST (arm=1)  6.802 2.638     1.632    11.971
+RMST (arm=0) 26.067 1.846    22.449    29.684
+
+
+Restricted Mean Time Lost (RMTL) by arm 
+               Est.    se lower .95 upper .95
+RMTL (arm=1) 23.198 2.638    18.029    28.368
+RMTL (arm=0)  3.933 1.846     0.316     7.551
+
+
+Between-group contrast 
+                        Est. lower .95 upper .95     p
+RMST (arm=1)-(arm=0) -19.265   -25.575   -12.955 0.000
+RMST (arm=1)/(arm=0)   0.261     0.121     0.565 0.001
+RMTL (arm=1)/(arm=0)   5.898     2.289    15.195 0.000
+[1] ""
+[1] "RMST at 50 days:"
+
+The truncation time: tau = 50  was specified. 
+
+Restricted Mean Survival Time (RMST) by arm 
+               Est.    se lower .95 upper .95
+RMST (arm=1) 10.147 4.379     1.564    18.730
+RMST (arm=0) 37.711 3.940    29.989    45.433
+
+
+Restricted Mean Time Lost (RMTL) by arm 
+               Est.    se lower .95 upper .95
+RMTL (arm=1) 39.853 4.379    31.270    48.436
+RMTL (arm=0) 12.289 3.940     4.567    20.011
+
+
+Between-group contrast 
+                        Est. lower .95 upper .95     p
+RMST (arm=1)-(arm=0) -27.564   -39.109   -16.019 0.000
+RMST (arm=1)/(arm=0)   0.269     0.113     0.642 0.003
+RMTL (arm=1)/(arm=0)   3.243     1.669     6.301 0.001

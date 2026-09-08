@@ -1,0 +1,16 @@
+                   detected
+protocol            FALSE TRUE
+  Ground-based lure    10   17
+  Tree-mounted bait     6   17
+
+	Fisher's Exact Test for Count Data
+
+data:  occupancy_table
+p-value = 0.5456
+alternative hypothesis: true odds ratio is not equal to 1
+95 percent confidence interval:
+ 0.4260443 6.8765303
+sample estimates:
+odds ratio 
+  1.649723 
+
