@@ -850,13 +850,14 @@ p_revisit_survival <- ggsurvplot(
   revisit_km,
   data = revisit_data,
   risk.table = TRUE,
-  conf.int = FALSE,
+  conf.int = TRUE,
+  conf.int.alpha = 0.08,
   censor = TRUE,
   palette = unname(protocol_colours),
   legend.title = "",
   legend.labs = protocol_levels,
   xlab = "Days since first detection",
-  ylab = "Probability of no revisit",
+  ylab = "Probability of no subsequent event",
   break.time.by = 10,
   ggtheme = theme_bw(base_size = 14) + theme(panel.grid = element_blank())
 )
